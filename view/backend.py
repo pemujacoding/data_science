@@ -1,6 +1,17 @@
 import pandas as pd
 import joblib
+import requests
+import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CITY_PATH = os.path.join(BASE_DIR, "le_city.pkl")
+DISTRICT_PATH = os.path.join(BASE_DIR, "le_district.pkl")
+FACILITY_PATH = os.path.join(BASE_DIR, "mlb_facilities.pkl")
+MODEL_PATH = os.path.join(BASE_DIR, "model_rr.h5")
+
+with open(MODEL_PATH, "rb") as f:
+    model_rr = joblib.load(MODEL_PATH)
+    
 def condition_input(input) :
     condition_map = {
         'butuh renovasi': 0,
@@ -23,7 +34,7 @@ def furnishing_input(input) :
     return furnishing_val
 
 def facilities_input(input) :
-    with open("../mlb_facilities.pkl", "rb") as f:
+    with open(FACILITY_PATH, "rb") as f:
         mlb = joblib.load(f)
 
         fac_encoded = mlb.transform([input])
@@ -32,12 +43,12 @@ def facilities_input(input) :
         return fac_df
 
 def city_input(input) :
-    with open('../le_city.pkl', 'rb') as f:
+    with open(CITY_PATH, 'rb') as f:
         city_encoder = joblib.load(f)
         return city_encoder.transform([input])
 
 def district_input(input) :
-    with open('../le_district.pkl', 'rb') as f:
+    with open(DISTRICT_PATH, 'rb') as f:
         district_encoder = joblib.load(f)
         return district_encoder.transform([input])
 
@@ -128,7 +139,33 @@ def get_district() :
     result = ",".join(matches)
     return result
 
+
+import requests
+
+def get_coords(city, district):
+    query = f"{district}, {city}, Indonesia"
+    url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json"
+
+    headers = {
+        "User-Agent": "YourAppName/1.0 (contact@yourdomain.com)"
+    }
+
+    res = requests.get(url, headers=headers)
+
+    try:
+        data = res.json()
+    except:
+        print("Response bukan JSON:")
+        print(res.text)
+        return None, None
+    
+    if len(data) == 0:
+        return None, None
+
+    return float(data[0]["lat"]), float(data[0]["lon"])
+
+
+
 def tebak_harga(df_input) :
-    model_rr = joblib.load('../model_rr.h5')
     y_pred = model_rr.predict(df_input)
     return y_pred

@@ -93,8 +93,6 @@ fasicilities = st.multiselect("Fasilitas : ",listfacility)
 property_condition = st.selectbox("Kondisi Properti",listcondition)
 furnishing = st.selectbox("Kondisi Properti",listfurnishing)
 electricity = st.selectbox("Listrik (mAh) : ",listmah)
-latitude = st.number_input("Latitude : ")
-longitude = st.number_input("Longitude : ")
 land_size = st.number_input("Ukuran lahan (m2) : ")
 building_size = st.number_input("Ukuran bangunan (m2) : ")
 bedrooms = st.number_input("Kamar tidur : ", min_value = 0,step=1)
@@ -106,13 +104,13 @@ floors = st.number_input("Lantai : ",min_value = 0,step=1)
 building_age = st.number_input("Usia rumah : ",min_value = 0,step=1)
 garages = st.number_input("Garasi : ",min_value = 0 ,step=1)
 
-if st.button("Tebak harga"):
+if st.button("Prediksi harga"):
     city_labelled = bc.city_input(city)
     district_labelled = bc.district_input(district[0]) if district else 0
     condition_labelled = bc.condition_input(property_condition)
     furnishing_labelled = bc.furnishing_input(furnishing)
     facilities_labelled = bc.facilities_input(fasicilities)
-
+    latitude, longitude = bc.get_coords(city,district)
     df_input = pd.DataFrame({
         'district': district_labelled,
         'city': city_labelled,
